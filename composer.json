@@ -1,0 +1,10 @@
+{
+    "name": "hab/simplesamlphp-module-pica",
+    "description": "Provides authentication module for Pica-based library systems",
+    "type": "simplesamlphp-module",
+    "license": "GPL-3.0+",
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0",
+        "hab/picaauth": "~0.1"
+    }
+}
