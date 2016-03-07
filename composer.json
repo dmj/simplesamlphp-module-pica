@@ -6,5 +6,8 @@
     "require": {
         "simplesamlphp/composer-module-installer": "~1.0",
         "hab/picaauth": "~0.1"
+    },
+    "require-dev": {
+        "simplesamlphp/simplesamlphp": "~1.13"
     }
 }
