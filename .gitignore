@@ -7,3 +7,8 @@ vendor
 review
 cache
 composer.lock
+
+# GNU Global
+GPATH
+GRTAGS
+GTAGS
