@@ -63,12 +63,15 @@ class PicaTest extends TestCase
         $source = $this
                 ->getMockBuilder('sspmod_pica_Auth_Source_Pica')
                 ->disableOriginalConstructor()
-                ->setMethods(array('getAuthenticationModule'))
+                ->setMethods(array('getAuthenticationModule', 'handleAuthenticationModuleRuntimeError'))
                 ->getMock();
         $source
             ->expects($this->any())
             ->method('getAuthenticationModule')
             ->will($this->returnValue($module));
+        $source
+            ->expects($this->once())
+            ->method('handleAuthenticationModuleRuntimeError');
 
         $method = new ReflectionMethod($source, 'login');
         $method->setAccessible(true);

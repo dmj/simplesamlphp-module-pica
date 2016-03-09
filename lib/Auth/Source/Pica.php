@@ -33,6 +33,13 @@ use HAB\Pica\Auth;
 class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
 {
     /**
+     * Error message settings.
+     *
+     * @var array
+     */
+    private $message;
+
+    /**
      * Factory function for authentication module.
      *
      * @var callable
@@ -51,6 +58,7 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
 
         $configuration = SimpleSAML_Configuration::loadFromArray($config['pica']);
         $this->factory = $this->createAuthenticationModuleFactory($configuration);
+        $this->message = $configuration->getArray('errors', array());
         $this->attrmap = $configuration->getArray('attrmap', array());
     }
 
@@ -63,6 +71,7 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
         try {
             $attributes = $module->authenticate($username, $password);
         } catch (RuntimeException $error) {
+            $this->handleAuthenticationModuleRuntimeError($error);
             throw new SimpleSAML_Error_AuthSource('pica', $error->getMessage(), $error);
         }
         if ($attributes === false) {
@@ -97,6 +106,24 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
             break;
         default:
             throw new Exception("Unknown pica authentication module: '{$module}'");
+        }
+    }
+
+    /**
+     * Handle authentication module runtime error.
+     *
+     * @param  RuntimeException $error
+     * @return void
+     */
+    protected function handleAuthenticationModuleRuntimeError (RuntimeException $error)
+    {
+        if ($this->message) {
+            $defaults = array('to' => null, 'from' => null, 'subject' => 'Runtime error in Pica authentication module');
+            $settings = array_replace($defaults, array_intersect_key($this->message, $defaults));
+
+            $message = new SimpleSAML_XHTML_EMail($settings['to'], $settings['subject'], $settings['from']);
+            $message->setBody(sprintf('<h1>%s</h1><pre>%s</pre>', $error->getMessage(), $error->getTraceAsString()));
+            $message->send();
         }
     }
 
