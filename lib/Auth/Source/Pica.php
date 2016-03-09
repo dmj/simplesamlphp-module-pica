@@ -107,6 +107,7 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
         default:
             throw new Exception("Unknown pica authentication module: '{$module}'");
         }
+        return $factory;
     }
 
     /**
