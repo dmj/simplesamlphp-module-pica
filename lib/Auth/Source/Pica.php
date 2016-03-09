@@ -60,7 +60,11 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
     protected function login ($username, $password)
     {
         $module = $this->getAuthenticationModule();
-        $attributes = $module->authenticate($username, $password);
+        try {
+            $attributes = $module->authenticate($username, $password);
+        } catch (RuntimeException $error) {
+            throw new SimpleSAML_Error_AuthSource('pica', $error->getMessage(), $error);
+        }
         if ($attributes === false) {
             throw new SimpleSAML_Error_Error('WRONGUSERPASS');
         }
@@ -118,7 +122,7 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
      *
      * @return Auth\AuthenticationInterface
      */
-    private function getAuthenticationModule ()
+    protected function getAuthenticationModule ()
     {
         return call_user_func($this->factory);
     }

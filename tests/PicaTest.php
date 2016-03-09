@@ -48,4 +48,30 @@ class PicaTest extends TestCase
                 ->getMock();
         $source->createAuthenticationModuleFactory($config);
     }
+
+    /**
+     * @expectedException SimpleSAML_Error_AuthSource
+     */
+    public function testExceptionOnAuthenticationModuleRuntimeError ()
+    {
+        $module = $this->getMockForAbstractClass('HAB\Pica\Auth\AuthenticationInterface');
+        $module
+            ->expects($this->any())
+            ->method('authenticate')
+            ->will($this->throwException(new RuntimeException()));
+
+        $source = $this
+                ->getMockBuilder('sspmod_pica_Auth_Source_Pica')
+                ->disableOriginalConstructor()
+                ->setMethods(array('getAuthenticationModule'))
+                ->getMock();
+        $source
+            ->expects($this->any())
+            ->method('getAuthenticationModule')
+            ->will($this->returnValue($module));
+
+        $method = new ReflectionMethod($source, 'login');
+        $method->setAccessible(true);
+        $method->invoke($source, 'foo', 'bar');
+    }
 }
