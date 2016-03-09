@@ -50,25 +50,7 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
         }
 
         $configuration = SimpleSAML_Configuration::loadFromArray($config['pica']);
-        $module = $configuration->getString('module');
-        switch ($module) {
-            case 'lbs4-webservice':
-                $serviceUrl = $configuration->getString('serviceUrl');
-                $catalogNumber = $configuration->getInteger('catalogNumber');
-                $lbsUserNumber = $configuration->getInteger('lbsUserNumber');
-                $this->factory = function () use ($serviceUrl, $catalogNumber, $lbsUserNumber) {
-                    return new Auth\LBSAuthentication($serviceUrl, $catalogNumber, $lbsUserNumber);
-                };
-                break;
-            case 'loan3-web':
-                $serviceUrl = $configuration->getString('serviceUrl');
-                $this->factory = function () use ($serviceUrl) {
-                    return new Auth\LOAN3WebAuthentication($serviceUrl);
-                };
-                break;
-            default:
-                throw new Exception("Unknown pica authentication module: '{$module}'");
-        }
+        $this->factory = $this->createAuthenticationModuleFactory($configuration);
         $this->attrmap = $configuration->getArray('attrmap', array());
     }
 
@@ -83,6 +65,35 @@ class sspmod_pica_Auth_Source_Pica extends sspmod_core_Auth_UserPassBase
             throw new SimpleSAML_Error_Error('WRONGUSERPASS');
         }
         return $this->normalize($attributes);
+    }
+
+    /**
+     * Return authentication module factory function.
+     *
+     * @param  SimpleSAML_Configuration $config
+     * @return callable
+     */
+    public function createAuthenticationModuleFactory (SimpleSAML_Configuration $config)
+    {
+        $module = $config->getString('module');
+        switch ($module) {
+        case 'lbs4-webservice':
+            $serviceUrl = $config->getString('serviceUrl');
+            $catalogNumber = $config->getInteger('catalogNumber');
+            $lbsUserNumber = $config->getInteger('lbsUserNumber');
+            $factory = function () use ($serviceUrl, $catalogNumber, $lbsUserNumber) {
+                return new Auth\LBSAuthentication($serviceUrl, $catalogNumber, $lbsUserNumber);
+            };
+            break;
+        case 'loan3-web':
+            $serviceUrl = $config->getString('serviceUrl');
+            $factory = function () use ($serviceUrl) {
+                return new Auth\LOAN3WebAuthentication($serviceUrl);
+            };
+            break;
+        default:
+            throw new Exception("Unknown pica authentication module: '{$module}'");
+        }
     }
 
     /**
